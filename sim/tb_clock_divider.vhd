@@ -6,7 +6,7 @@
 -- Author     : Mathieu Rosiere
 -- Company    : 
 -- Created    : 2017-04-27
--- Last update: 2021-08-25
+-- Last update: 2022-02-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -15,8 +15,9 @@
 -- Copyright (c) 2017 
 -------------------------------------------------------------------------------
 -- Revisions  :
--- Date        Version  Author  Description
--- 2017-04-27  1.0      mrosiere	Created
+-- Date        Version  Author   Description
+-- 2022-02-09  1.1      mrosiere Update tb from ALGO parameter
+-- 2017-04-27  1.0      mrosiere Created
 -------------------------------------------------------------------------------
 
 library IEEE;
@@ -45,7 +46,6 @@ architecture tb of tb_clock_divider is
   signal clk_div8_o        : std_logic;
   signal clk_div25_algo0_o : std_logic;
   signal clk_div25_algo1_o : std_logic;
-  signal clk_div25_algo2_o : std_logic;
 
   -------------------------------------------------------
   -- run
@@ -81,7 +81,7 @@ begin  -- architecture tb
   dut_div1 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 1
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -93,7 +93,7 @@ begin  -- architecture tb
   dut_div2 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 2
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -105,7 +105,7 @@ begin  -- architecture tb
   dut_div3 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 3
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -117,7 +117,7 @@ begin  -- architecture tb
   dut_div4 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 4
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -129,7 +129,7 @@ begin  -- architecture tb
   dut_div5 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 5
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -141,7 +141,7 @@ begin  -- architecture tb
   dut_div6 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 6
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -153,7 +153,7 @@ begin  -- architecture tb
   dut_div7 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 7
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -165,7 +165,7 @@ begin  -- architecture tb
   dut_div8 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 8
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
      )
     port map
     (clk_i        => clk_i        
@@ -177,7 +177,7 @@ begin  -- architecture tb
   dut_div25_algo0 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 25
-    ,ALGO         => 0
+    ,ALGO         => "pulse"
     )
     port map
     (clk_i        => clk_i        
@@ -189,25 +189,13 @@ begin  -- architecture tb
     dut_div25_algo1 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 25
-    ,ALGO         => 1
+    ,ALGO         => "50%"
     )
     port map
     (clk_i        => clk_i        
     ,cke_i        => cke_i        
     ,arstn_i      => arstn_i      
     ,clk_div_o    => clk_div25_algo1_o    
-     );
-
-    dut_div25_algo2 : entity work.clock_divider(rtl)
-    generic map
-    (RATIO        => 25
-    ,ALGO         => 2
-    )
-    port map
-    (clk_i        => clk_i        
-    ,cke_i        => cke_i        
-    ,arstn_i      => arstn_i      
-    ,clk_div_o    => clk_div25_algo2_o    
      );
 
   clk_i <= not test_done and not clk_i after 5 ns;

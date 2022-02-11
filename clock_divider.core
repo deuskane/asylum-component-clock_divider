@@ -13,10 +13,11 @@ CAPI=2:
 #-----------------------------------------------------------------------------
 # Revisions  :
 # Date        Version  Author   Description
+# 2022-02-11  1.1.0    mrosiere Ratio parameter is string, delete GATED_CLOCK
 # 2021-10-26  1.0.0    mrosiere Created
 #-----------------------------------------------------------------------------
 
-name : asylum:component:clock_divider:1.0.0
+name : asylum:component:clock_divider:1.1.0
 description : Clock Divider Cell
 
 filesets:
@@ -29,8 +30,7 @@ filesets:
       - src/clock_divider.vhd
     file_type : vhdlSource
     depend :
-      - ">=asylum:package:math_pkg:1.0.0"
-      - ">=asylum:component:gated_clock:1.0.0"
+      - "asylum:package:math_pkg:1.0.0"
       
   #---------------------------------------
   # Testbench Files
@@ -73,12 +73,6 @@ parameters :
 
   ALGO :
     description : Clock division algorithm
-    datatype    : int
+    datatype    : str
     default     : 0
-    paramtype   : generic
-
-  GATED_CLK :
-    description : Add clock gated after divider
-    datatype    : bool
-    default     : true
     paramtype   : generic
