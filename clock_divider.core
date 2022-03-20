@@ -12,12 +12,13 @@ CAPI=2:
 # Copyright (c) 2021
 #-----------------------------------------------------------------------------
 # Revisions  :
-# Date        Version  Author   Description
+# Date        Version  Author   Description#
+# 2022-02-27  2.0.0    mrosiere Create real 50% duty cycle
 # 2022-02-11  1.1.0    mrosiere Ratio parameter is string, delete GATED_CLOCK
 # 2021-10-26  1.0.0    mrosiere Created
 #-----------------------------------------------------------------------------
 
-name : asylum:component:clock_divider:1.1.0
+name : asylum:component:clock_divider:2.0.0
 description : Clock Divider Cell
 
 filesets:
@@ -72,7 +73,7 @@ parameters :
     paramtype   : generic
 
   ALGO :
-    description : Clock division algorithm
+    description : Clock division algorithm ("pulse" / "50%")
     datatype    : str
-    default     : 0
+    default     : pulse
     paramtype   : generic

@@ -6,7 +6,7 @@
 -- Author     : Mathieu Rosiere
 -- Company    : 
 -- Created    : 2017-04-27
--- Last update: 2022-02-11
+-- Last update: 2022-02-27
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -46,6 +46,7 @@ architecture tb of tb_clock_divider is
   signal clk_div8_o        : std_logic;
   signal clk_div25_algo0_o : std_logic;
   signal clk_div25_algo1_o : std_logic;
+  signal clk_div24_algo1_o : std_logic;
 
   -------------------------------------------------------
   -- run
@@ -186,7 +187,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div25_algo0_o    
      );
 
-    dut_div25_algo1 : entity work.clock_divider(rtl)
+  dut_div25_algo1 : entity work.clock_divider(rtl)
     generic map
     (RATIO        => 25
     ,ALGO         => "50%"
@@ -196,6 +197,18 @@ begin  -- architecture tb
     ,cke_i        => cke_i        
     ,arstn_i      => arstn_i      
     ,clk_div_o    => clk_div25_algo1_o    
+     );
+
+  dut_div24_algo1 : entity work.clock_divider(rtl)
+    generic map
+    (RATIO        => 24
+    ,ALGO         => "50%"
+    )
+    port map
+    (clk_i        => clk_i        
+    ,cke_i        => cke_i        
+    ,arstn_i      => arstn_i      
+    ,clk_div_o    => clk_div24_algo1_o    
      );
 
   clk_i <= not test_done and not clk_i after 5 ns;
