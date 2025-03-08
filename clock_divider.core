@@ -29,9 +29,10 @@ filesets:
   files_hdl:
     files:
       - src/clock_divider.vhd
-    file_type : vhdlSource
-    depend :
-      - "asylum:package:math_pkg:1.0.0"
+    file_type    : vhdlSource
+    #logical_name : asylum
+    depend       :
+      - asylum:package:math_pkg
       
   #---------------------------------------
   # Testbench Files
