@@ -28,7 +28,7 @@ filesets:
   #---------------------------------------
   files_hdl:
     files:
-      - src/clock_divider.vhd
+      - hdl/clock_divider.vhd
     file_type    : vhdlSource
     #logical_name : asylum
     depend       :
