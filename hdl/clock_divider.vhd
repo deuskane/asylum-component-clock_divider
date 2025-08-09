@@ -6,7 +6,7 @@
 -- Author     : Mathieu Rosière
 -- Company    : 
 -- Created    : 2013-12-26
--- Last update: 2022-03-20
+-- Last update: 2025-08-09
 -- Platform   : 
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
@@ -30,17 +30,19 @@ library work;
 use work.math_pkg.all;
 
 entity clock_divider is
-    generic(RATIO        : positive := 2;
-            ALGO         : string   := "pulse"    -- pulse
-                                                  -- 50%
+    generic(RATIO        : positive := 2;       -- Static Ratio
+            ALGO         : string   := "pulse"  -- pulse
+                                                -- 50%
             );
-    port   (clk_i        : in  std_logic;
-            cke_i        : in  std_logic;
-            arstn_i      : in  std_logic;
-            clk_div_o    : out std_logic);
+    port   (clk_i        : in  std_logic;       -- Clock Input
+            cke_i        : in  std_logic;       -- Clock Enable
+            arstn_i      : in  std_logic;       -- Reset Asynchronous active low
+            clk_div_o    : out std_logic        -- Clock Input divided by RATIO
+            );
 end clock_divider;
 
 architecture rtl of clock_divider is
+
   function get_ratio_max
     return natural is
   begin  -- function get_ratio_max
@@ -50,24 +52,33 @@ architecture rtl of clock_divider is
 
     return RATIO;
   end function get_ratio_max;
-  
+
   constant RATIO_MAX            : natural := get_ratio_max;
   signal   clock_counter_r      : natural range 0 to RATIO_MAX-1;
+  signal   clock_counter_r_next : natural range 0 to RATIO_MAX-1;
   signal   clock_div_pos_r_next : std_logic;
   signal   clock_div_pos_r      : std_logic;
   signal   clock_div_neg_r      : std_logic;
 
 begin
+  -----------------------------------------------------------------------------
   -- Ratio = 1, then clock is unchanged
+  -----------------------------------------------------------------------------
   gen_ratio_eq_1: if RATIO=1
   generate
     clk_div_o <= clk_i;
   end generate gen_ratio_eq_1;
 
+  -----------------------------------------------------------------------------
+  -- Ratio > 1
+  -----------------------------------------------------------------------------
   gen_ratio_gt_1: if RATIO > 1
   generate
 
-    -- Generate a pulse of 1 cycle
+    ---------------------------------------------------------------------------
+    -- Algo "Pulse" : Generate a pulse of 1 cycle
+    -- Is 1 when counter is 0, else is 0
+    ---------------------------------------------------------------------------
     gen_algo_pulse: if ALGO = "pulse"
     generate
       clock_div_pos_r_next <= '1' when (clock_counter_r = 0) else
@@ -77,47 +88,54 @@ begin
 
     end generate gen_algo_pulse;
     
-    -- Generate clock with closest of 50% duty cycle
+    ---------------------------------------------------------------------------
+    -- Algo "50%" : Generate clock with closest of 50% duty cycle
+    ---------------------------------------------------------------------------
     gen_algo_50percent: if ALGO = "50%"
     generate
       clock_div_pos_r_next <= '0' when (clock_counter_r < RATIO/2) else
                               '1';
 
-
+      -- If Ratio is even, just take the divider on posedge of clock
       gen_ratio_even : if RATIO mod 2 = 0
       generate
         clk_div_o            <= clock_div_pos_r;
       end generate gen_ratio_even; 
 
-      gen_ratio_odd : if RATIO mod 2 = 1
+      -- If Ratio is odd, combine the divider on posedge of clock and the
+      -- sampling on negedge
+      gen_ratio_odd  : if RATIO mod 2 = 1
       generate
         clk_div_o            <= clock_div_pos_r or clock_div_neg_r;
       end generate gen_ratio_odd; 
     end generate gen_algo_50percent;
+
+    ---------------------------------------------------------------------------
+    -- Registers
+    ---------------------------------------------------------------------------
+
+    -- decrease clock diviser
+    clock_counter_r_next <= RATIO_MAX-1 when (clock_counter_r = 0) else
+                            clock_counter_r-1;
     
+    -- Process on posedge of clock : counter and result of divider
     process(arstn_i,clk_i)
     begin 
       if arstn_i='0'
       then
         clock_counter_r <= RATIO_MAX-1;
-        clock_div_pos_r     <= '0';
+        clock_div_pos_r <= '0';
       elsif rising_edge(clk_i)
       then
         if (cke_i = '1')
         then
           clock_div_pos_r     <= clock_div_pos_r_next;
-
-          -- decrease clock diviser
-          if (clock_counter_r = 0)
-          then
-            clock_counter_r <= RATIO_MAX-1;
-          else
-            clock_counter_r <= clock_counter_r-1;
-          end if;
+          clock_counter_r     <= clock_counter_r_next;
         end if;
       end if;
     end process;
 
+    -- Process on negedge of clock : sample posedge divider 
     process(arstn_i,clk_i)
     begin 
       if arstn_i='0'
@@ -131,7 +149,6 @@ begin
         end if;
       end if;
     end process;
-
     
   end generate gen_ratio_gt_1;
 end rtl;
