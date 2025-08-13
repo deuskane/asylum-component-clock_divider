@@ -13,12 +13,13 @@ CAPI=2:
 #-----------------------------------------------------------------------------
 # Revisions  :
 # Date        Version  Author   Description#
-# 2022-02-27  2.0.0    mrosiere Create real 50% duty cycle
-# 2022-02-11  1.1.0    mrosiere Ratio parameter is string, delete GATED_CLOCK
 # 2021-10-26  1.0.0    mrosiere Created
+# 2022-02-11  1.1.0    mrosiere Ratio parameter is string, delete GATED_CLOCK
+# 2022-02-27  2.0.0    mrosiere Create real 50% duty cycle
+# 2025-08-13  2.0.1    mrosiere Instanciate Clock Buffer after clock divider
 #-----------------------------------------------------------------------------
 
-name : asylum:component:clock_divider:2.0.0
+name : asylum:component:clock_divider:2.0.1
 description : Clock Divider Cell
 
 filesets:
@@ -33,6 +34,7 @@ filesets:
     #logical_name : asylum
     depend       :
       - asylum:utils:pkg
+      - asylum:target:techmap
       
   #---------------------------------------
   # Testbench Files
