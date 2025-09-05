@@ -17,9 +17,10 @@ CAPI=2:
 # 2022-02-11  1.1.0    mrosiere Ratio parameter is string, delete GATED_CLOCK
 # 2022-02-27  2.0.0    mrosiere Create real 50% duty cycle
 # 2025-08-13  2.0.1    mrosiere Instanciate Clock Buffer after clock divider
+# 2025-09-05  2.0.2    mrosiere Add Package
 #-----------------------------------------------------------------------------
 
-name : asylum:component:clock_divider:2.0.1
+name : asylum:component:clock_divider:2.0.2
 description : Clock Divider Cell
 
 filesets:
@@ -29,6 +30,7 @@ filesets:
   #---------------------------------------
   files_hdl:
     files:
+      - hdl/clock_divider_pkg.vhd
       - hdl/clock_divider.vhd
     file_type    : vhdlSource
     #logical_name : asylum
