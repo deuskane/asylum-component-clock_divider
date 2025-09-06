@@ -6,7 +6,7 @@
 -- Author     : Mathieu Rosiere
 -- Company    : 
 -- Created    : 2017-04-27
--- Last update: 2022-02-27
+-- Last update: 2025-09-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,8 +21,10 @@
 -------------------------------------------------------------------------------
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.numeric_std.ALL;
+use     IEEE.STD_LOGIC_1164.ALL;
+use     IEEE.numeric_std.ALL;
+library work;
+use     work.clock_divider_pkg.all;
 
 entity tb_clock_divider is
   
@@ -79,7 +81,7 @@ architecture tb of tb_clock_divider is
   
 begin  -- architecture tb
 
-  dut_div1 : entity work.clock_divider(rtl)
+  dut_div1 : clock_divider
     generic map
     (RATIO        => 1
     ,ALGO         => "pulse"
@@ -91,7 +93,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div1_o    
      );
     
-  dut_div2 : entity work.clock_divider(rtl)
+  dut_div2 : clock_divider
     generic map
     (RATIO        => 2
     ,ALGO         => "pulse"
@@ -103,7 +105,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div2_o    
      );
     
-  dut_div3 : entity work.clock_divider(rtl)
+  dut_div3 : clock_divider
     generic map
     (RATIO        => 3
     ,ALGO         => "pulse"
@@ -115,7 +117,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div3_o    
      );
     
-  dut_div4 : entity work.clock_divider(rtl)
+  dut_div4 : clock_divider
     generic map
     (RATIO        => 4
     ,ALGO         => "pulse"
@@ -127,7 +129,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div4_o    
      );
     
-  dut_div5 : entity work.clock_divider(rtl)
+  dut_div5 : clock_divider
     generic map
     (RATIO        => 5
     ,ALGO         => "pulse"
@@ -139,7 +141,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div5_o    
      );
     
-  dut_div6 : entity work.clock_divider(rtl)
+  dut_div6 : clock_divider
     generic map
     (RATIO        => 6
     ,ALGO         => "pulse"
@@ -151,7 +153,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div6_o    
      );
     
-  dut_div7 : entity work.clock_divider(rtl)
+  dut_div7 : clock_divider
     generic map
     (RATIO        => 7
     ,ALGO         => "pulse"
@@ -163,7 +165,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div7_o    
      );
     
-  dut_div8 : entity work.clock_divider(rtl)
+  dut_div8 : clock_divider
     generic map
     (RATIO        => 8
     ,ALGO         => "pulse"
@@ -175,7 +177,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div8_o    
      );
 
-  dut_div25_algo0 : entity work.clock_divider(rtl)
+  dut_div25_algo0 : clock_divider
     generic map
     (RATIO        => 25
     ,ALGO         => "pulse"
@@ -187,7 +189,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div25_algo0_o    
      );
 
-  dut_div25_algo1 : entity work.clock_divider(rtl)
+  dut_div25_algo1 : clock_divider
     generic map
     (RATIO        => 25
     ,ALGO         => "50%"
@@ -199,7 +201,7 @@ begin  -- architecture tb
     ,clk_div_o    => clk_div25_algo1_o    
      );
 
-  dut_div24_algo1 : entity work.clock_divider(rtl)
+  dut_div24_algo1 : clock_divider
     generic map
     (RATIO        => 24
     ,ALGO         => "50%"
