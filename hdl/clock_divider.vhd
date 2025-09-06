@@ -6,7 +6,7 @@
 -- Author     : Mathieu Rosière
 -- Company    : 
 -- Created    : 2013-12-26
--- Last update: 2025-08-13
+-- Last update: 2025-09-06
 -- Platform   : 
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
@@ -28,6 +28,7 @@ library IEEE;
 use     IEEE.STD_LOGIC_1164.ALL;
 use     IEEE.numeric_std.ALL;
 library work;
+use     work.techmap_pkg.all;
 use     work.math_pkg.all;
 
 -------------------------------------------------------------------------------
@@ -165,7 +166,7 @@ begin
     -- Clock Buffer
     ---------------------------------------------------------------------------
 
-  cbufg : entity work.cbufg(rtl)
+  ins_cbufg : cbufg
   port map (
     d_i   => clk_div,
     d_o   => clk_div_o
