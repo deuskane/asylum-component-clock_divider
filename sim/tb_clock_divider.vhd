@@ -23,8 +23,8 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.ALL;
 use     IEEE.numeric_std.ALL;
-library work;
-use     work.clock_divider_pkg.all;
+library asylum;
+use     asylum.clock_divider_pkg.all;
 
 entity tb_clock_divider is
   

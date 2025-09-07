@@ -27,9 +27,9 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.ALL;
 use     IEEE.numeric_std.ALL;
-library work;
-use     work.techmap_pkg.all;
-use     work.math_pkg.all;
+library asylum;
+use     asylum.techmap_pkg.all;
+use     asylum.math_pkg.all;
 
 -------------------------------------------------------------------------------
 entity clock_divider is
