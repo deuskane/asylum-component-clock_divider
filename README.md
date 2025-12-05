@@ -175,10 +175,4 @@ Parameters can be configured at instantiation:
 ```bash
 # Run simulation with default parameters (RATIO=2, ALGO="pulse")
 fusesoc run --build-root ./build asylum:component:clock_divider:2.0.2 sim_basic
-
-# Build with custom ratio (RATIO=8)
-fusesoc run --build-root ./build --RATIO 8 asylum:component:clock_divider:2.0.2
-
-# Build with 50% duty cycle mode
-fusesoc run --build-root ./build --ALGO 50% asylum:component:clock_divider:2.0.2
 ```
