@@ -1,3 +1,3 @@
 FILE_CORE	?= clock_divider.core
-TARGET          ?= sim
+TARGET          ?= sim_basic
 TOOL		?= ghdl
