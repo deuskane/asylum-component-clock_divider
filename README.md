@@ -1,3 +1,5 @@
+[![CI](https://github.com/deuskane/asylum-component-clock_divider/actions/workflows/ci.yml/badge.svg)](https://github.com/deuskane/asylum-component-clock_divider/actions/workflows/ci.yml)
+
 # Asylum Component - Clock Divider
 
 A flexible and configurable clock divider component with multiple division algorithms for FPGA designs.
