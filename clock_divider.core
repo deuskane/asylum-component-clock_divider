@@ -18,9 +18,12 @@ CAPI=2:
 # 2022-02-27  2.0.0    mrosiere Create real 50% duty cycle
 # 2025-08-13  2.0.1    mrosiere Instanciate Clock Buffer after clock divider
 # 2025-09-05  2.0.2    mrosiere Add Package
+# 2026-10-05  2.0.3    mrosiere Fix 50% period for odd RATIO, assert on invalid
+#                               ALGO, UVVM self-checking testbench, remove
+#                               unused parameters
 #-----------------------------------------------------------------------------
 
-name : asylum:component:clock_divider:2.0.2
+name : asylum:component:clock_divider:2.0.3
 description : Clock Divider Cell
 
 filesets:
@@ -44,7 +47,9 @@ filesets:
   files_sim:
     files:
       - sim/tb_clock_divider.vhd
-    file_type : vhdlSource
+    file_type : vhdlSource-2008
+    depend    :
+      - bitvis:verification:uvvm
 
 targets:
 
@@ -60,25 +65,13 @@ targets:
 
   sim_basic:
     << : *default
-    description     : Simulation of all cases
+    description     : Simulation of all RATIO / ALGO cases (UVVM, self-checking)
     filesets_append :
       - files_sim
     toplevel        : tb_clock_divider
     default_tool    : ghdl
     tools :
       ghdl :
-        run_options : ["--vcd=dut.vcd"]
+        analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
+        run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
 
-parameters :
-
-  RATIO :
-    description : fixed clock division ratio
-    datatype    : int
-    default     : 2
-    paramtype   : generic
-
-  ALGO :
-    description : Clock division algorithm ("pulse" / "50%")
-    datatype    : str
-    default     : pulse
-    paramtype   : generic

@@ -6,7 +6,7 @@
 -- Author     : Mathieu Rosière
 -- Company    : 
 -- Created    : 2013-12-26
--- Last update: 2025-09-06
+-- Last update: 2026-10-05
 -- Platform   : 
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
@@ -22,6 +22,9 @@
 -- 2022-02-10  1.3      mrosiere Delete unused algo
 -- 2022-02-27  2.0      mrosiere Create real 50%
 -- 2025-08-13  2.1      mrosiere Add clock buffer
+-- 2026-10-05  2.2      mrosiere 50% : period is RATIO for odd RATIO (was RATIO-1)
+--                               and high time is RATIO/2 cycles exactly,
+--                               assert on invalid ALGO (fallback to pulse)
 -------------------------------------------------------------------------------
 
 library IEEE;
@@ -48,23 +51,19 @@ end clock_divider;
 architecture rtl of clock_divider is
 
   -----------------------------------------------------------------------------
-  -- Function "get_ratio_max"
-  -- Arg     : N/A
-  -- Generic : ALGO
-  --           RATIO
-  -- Return  : Return the counter overflow value
-  -------------------------------------------------------------------------------
-  function get_ratio_max
-    return natural is
-  begin  -- function get_ratio_max
-    
-    if ALGO = "pulse" then return RATIO;       end if;
-    if ALGO = "50%"   then return 2*(RATIO/2); end if;
+  -- The counter period is always RATIO cycles
+  --  * "pulse" : clk_div_pos_r is 1 during 1 cycle (counter = 0)
+  --  * "50%"   : clk_div_pos_r is 1 during RATIO/2 cycles (integer division)
+  --              (counter >= RATIO_HIGH)
+  --              For odd RATIO, clk_div_neg_r (clk_div_pos_r sampled on the
+  --              falling edge) is ORed to extend the high phase by half a
+  --              cycle : RATIO/2 cycles high, RATIO/2 cycles low exactly
+  --              (assuming a 50% duty cycle on clk_i)
+  -----------------------------------------------------------------------------
+  constant RATIO_MAX            : natural := RATIO;
+  constant RATIO_HIGH           : natural := RATIO - RATIO/2;
+  constant ALGO_50              : boolean := (ALGO = "50%");
 
-    return RATIO;
-  end function get_ratio_max;
-
-  constant RATIO_MAX            : natural := get_ratio_max;
   signal   clk_counter_r      : natural range 0 to RATIO_MAX-1;
   signal   clk_counter_r_next : natural range 0 to RATIO_MAX-1;
   signal   clk_div_pos_r_next : std_logic;
@@ -73,6 +72,13 @@ architecture rtl of clock_divider is
   signal   clk_div            : std_logic;
 
 begin
+  -----------------------------------------------------------------------------
+  -- Check generic
+  -----------------------------------------------------------------------------
+  assert (ALGO = "pulse") or (ALGO = "50%")
+    report "clock_divider : invalid ALGO value """ & ALGO & """ (must be ""pulse"" or ""50%""), ""pulse"" is used"
+    severity failure;
+
   -----------------------------------------------------------------------------
   -- Ratio = 1, then clock is unchanged
   -----------------------------------------------------------------------------
@@ -90,8 +96,9 @@ begin
     ---------------------------------------------------------------------------
     -- Algo "Pulse" : Generate a pulse of 1 cycle
     -- Is 1 when counter is 0, else is 0
+    -- (also used for an invalid ALGO value, see assertion)
     ---------------------------------------------------------------------------
-    gen_algo_pulse: if ALGO = "pulse"
+    gen_algo_pulse: if not ALGO_50
     generate
       clk_div_pos_r_next <= '1' when (clk_counter_r = 0) else
                             '0';
@@ -103,10 +110,10 @@ begin
     ---------------------------------------------------------------------------
     -- Algo "50%" : Generate clock with closest of 50% duty cycle
     ---------------------------------------------------------------------------
-    gen_algo_50percent: if ALGO = "50%"
+    gen_algo_50percent: if ALGO_50
     generate
-      clk_div_pos_r_next <= '0' when (clk_counter_r < RATIO/2) else
-                            '1';
+      clk_div_pos_r_next <= '1' when (clk_counter_r >= RATIO_HIGH) else
+                            '0';
 
       -- If Ratio is even, just take the divider on posedge of clock
       gen_ratio_even : if RATIO mod 2 = 0
