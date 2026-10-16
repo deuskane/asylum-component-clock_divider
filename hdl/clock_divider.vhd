@@ -11,6 +11,11 @@
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
 -- Description: Clock divider with static RATIO
+--              RATIO = 1 : clk_div_o is directly clk_i (no register, no
+--              clock buffer) : cke_i and arstn_i are ignored, the clock is
+--              neither frozen by cke_i = '0' nor held low during reset.
+--              Use a clock gate (techmap cgate) on clk_div_o if this is
+--              required when RATIO can be 1.
 -------------------------------------------------------------------------------
 -- Copyright (c) 2013 
 -------------------------------------------------------------------------------
@@ -42,8 +47,9 @@ entity clock_divider is
                                               -- 50%
           );
   port   (clk_i        : in  std_logic;       -- Clock Input
-          cke_i        : in  std_logic;       -- Clock Enable
+          cke_i        : in  std_logic;       -- Clock Enable (ignored if RATIO=1)
           arstn_i      : in  std_logic;       -- Reset Asynchronous active low
+                                              -- (ignored if RATIO=1)
           clk_div_o    : out std_logic        -- Clock Input divided by RATIO
           );
 end clock_divider;
@@ -81,6 +87,8 @@ begin
 
   -----------------------------------------------------------------------------
   -- Ratio = 1, then clock is unchanged
+  -- cke_i and arstn_i are not used : clk_div_o is not frozen when
+  -- cke_i = '0' and not held low during reset
   -----------------------------------------------------------------------------
   gen_ratio_eq_1: if RATIO=1
   generate
