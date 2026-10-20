@@ -1,3 +1,5 @@
-default   : Default Target
-sim_basic : Simulation of all RATIO / ALGO cases (UVVM, self-checking)
+default         : Default Target
+lint_ghdl       : Lint with GHDL (-Wall analysis and elaboration of clock_divider)
+lint_ghdl_synth : Synthesis check, ghdl --synth -Wall of clock_divider (5 configurations)
+sim_basic       : Simulation of all RATIO / ALGO cases (UVVM, self-checking)
 

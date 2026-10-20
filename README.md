@@ -152,6 +152,8 @@ This IP has no software-visible registers.
 |--------|----------|-------------|
 | `default` | `clock_divider` | HDL fileset only (not a simulation) |
 | `sim_basic` | `tb_clock_divider` | Simulation of all `RATIO` / `ALGO` cases (UVVM, self-checking, GHDL) |
+| `lint_ghdl` | `asylum.clock_divider` | Lint: GHDL `-Wall` analysis and elaboration (empty simulation) |
+| `lint_ghdl_synth` | `asylum.clock_divider` | Synthesis check: `lint_ghdl`, then `ghdl --synth -Wall` of 5 configurations (`syn/ghdl/ghdl_synth.sh`: defaults, pulse `RATIO` 1 / 5, `"50%"` `RATIO` 4 / 5), fails on a synthesis error or an inferred latch |
 
 ### How to Run
 
@@ -161,6 +163,8 @@ The default tool is GHDL (`mk/defs.mk`: `TOOL ?= ghdl`, `TARGET ?= sim_basic`).
 make help                 # variables, rules and target list (mk/targets.txt)
 make sim_basic            # run one target (log in log/)
 make nonreg_sim           # run every sim_* target
+make lint_ghdl            # GHDL -Wall lint (make nonreg_lint: every lint_* target)
+make lint_ghdl_synth      # GHDL -Wall lint + ghdl --synth -Wall check
 make clean                # remove build/
 ```
 
@@ -176,7 +180,7 @@ fusesoc --cores-root . run --build-root build --target sim_basic asylum:componen
 
 ## Synthesis
 
-No dedicated synthesis target. The HDL of the `default` target contains no simulation-only construct (no `textio`, file access, `report` or `wait`) and is synthesizable. The clock buffer is taken from `asylum:target:techmap`: a pass-through (`hdl/generic/cbufg.vhd`) by default, or the NanoXplore NG-Medium cell when `TARGET_NANOXPLORE_NG_MEDIUM` is set. The divided output is a generated clock: declare it as such in the timing constraints of the design that instantiates it. For odd ratios with `"50%"` the output combines rising- and falling-edge registers.
+No vendor synthesis target (`lint_ghdl_synth` checks the RTL with `ghdl --synth`, see [Targets](#targets)). The HDL of the `default` target contains no simulation-only construct (no `textio`, file access, `report` or `wait`) and is synthesizable. The clock buffer is taken from `asylum:target:techmap`: a pass-through (`hdl/generic/cbufg.vhd`) by default, or the NanoXplore NG-Medium cell when `TARGET_NANOXPLORE_NG_MEDIUM` is set. The divided output is a generated clock: declare it as such in the timing constraints of the design that instantiates it. For odd ratios with `"50%"` the output combines rising- and falling-edge registers.
 
 ## Design Notes
 
@@ -206,6 +210,8 @@ asylum-component-clock_divider/
 │   └── clock_divider.vhd
 ├── sim/
 │   └── tb_clock_divider.vhd    # UVVM self-checking testbench
+├── syn/ghdl/
+│   └── ghdl_synth.sh           # ghdl --synth check (post_run hook of lint_ghdl_synth)
 └── .github/workflows/ci.yml    # CI (sim_basic)
 ```
 
