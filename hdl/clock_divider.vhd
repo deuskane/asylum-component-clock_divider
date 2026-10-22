@@ -6,11 +6,14 @@
 -- Author     : Mathieu Rosière
 -- Company    : 
 -- Created    : 2013-12-26
--- Last update: 2026-10-05
+-- Last update: 2026-10-22
 -- Platform   : 
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
 -- Description: Clock divider with static RATIO
+--              clk_div_o goes through the clock buffer cbufg (techmap),
+--              unless BYPASS_CBUFG = true (clk_div_o used as a data, e.g. a
+--              clock enable)
 -------------------------------------------------------------------------------
 -- Copyright (c) 2013 
 -------------------------------------------------------------------------------
@@ -25,6 +28,7 @@
 -- 2026-10-05  2.2      mrosiere 50% : period is RATIO for odd RATIO (was RATIO-1)
 --                               and high time is RATIO/2 cycles exactly,
 --                               assert on invalid ALGO (fallback to pulse)
+-- 2026-10-22  2.3      mrosiere Add BYPASS_CBUFG (no clock buffer on clk_div_o)
 -------------------------------------------------------------------------------
 
 library IEEE;
@@ -38,8 +42,10 @@ use     asylum.math_pkg.all;
 entity clock_divider is
 -------------------------------------------------------------------------------
   generic(RATIO        : positive := 2;       -- Static Ratio
-          ALGO         : string   := "pulse"  -- pulse
+          ALGO         : string   := "pulse"; -- pulse
                                               -- 50%
+          BYPASS_CBUFG : boolean  := false    -- false : clk_div_o through the clock buffer cbufg
+                                              -- true  : no clock buffer (clk_div_o used as a data)
           );
   port   (clk_i        : in  std_logic;       -- Clock Input
           cke_i        : in  std_logic;       -- Clock Enable
@@ -172,12 +178,23 @@ begin
     ---------------------------------------------------------------------------
     -- Clock Buffer
     ---------------------------------------------------------------------------
+    gen_cbufg: if not BYPASS_CBUFG
+    generate
+      ins_cbufg : cbufg
+      port map (
+        d_i   => clk_div,
+        d_o   => clk_div_o
+        );
+    end generate gen_cbufg;
 
-  ins_cbufg : cbufg
-  port map (
-    d_i   => clk_div,
-    d_o   => clk_div_o
-    );
+    ---------------------------------------------------------------------------
+    -- No Clock Buffer : clk_div_o is used as a data (e.g. a clock enable in
+    -- "pulse" mode), it must not use a clock resource
+    ---------------------------------------------------------------------------
+    gen_cbufg_b: if BYPASS_CBUFG
+    generate
+      clk_div_o <= clk_div;
+    end generate gen_cbufg_b;
 
   end generate gen_ratio_gt_1;
 end rtl;
