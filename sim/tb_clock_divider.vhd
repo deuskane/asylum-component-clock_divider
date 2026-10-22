@@ -16,12 +16,17 @@
 --                the expected clk_i edge after the release
 --              * cke_i = 0 : clk_div_o frozen
 --              * cke_i = 1 one cycle out of 2 (pulse) : period 2*RATIO*T
+--              Each instance has a copy with BYPASS_CBUFG = true : its
+--              clk_div_o must be equal to the one of the instance with cbufg
+--              during the whole simulation (cbufg is a wire in the generic
+--              techmap)
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author   Description
 -- 2017-04-27  1.0      mrosiere Created
 -- 2022-02-09  1.1      mrosiere Update tb from ALGO parameter
 -- 2026-10-05  2.0      mrosiere UVVM self-checking testbench
+-- 2026-10-22  2.1      mrosiere Instances with BYPASS_CBUFG = true
 -------------------------------------------------------------------------------
 
 library IEEE;
@@ -56,6 +61,9 @@ architecture tb of tb_clock_divider is
   signal   cke_toggle   : boolean   := false; -- cke_i active one cycle out of 2
   signal   arstn_i      : std_logic := '0';
   signal   clk_div      : clk_div_t;
+  signal   clk_div_byp  : clk_div_t;         -- Instances with BYPASS_CBUFG = true
+  signal   byp_events   : natural   := 0;    -- Number of comparisons clk_div / clk_div_byp
+  signal   byp_errors   : natural   := 0;    -- Number of mismatches clk_div / clk_div_byp
 
   function algo_name(a : natural) return string is
   begin
@@ -112,7 +120,52 @@ begin
       ,arstn_i   => arstn_i
       ,clk_div_o => clk_div(1)(i)
       );
+
+    dut_pulse_byp : clock_divider
+      generic map
+      (RATIO        => C_RATIOS(i)
+      ,ALGO         => "pulse"
+      ,BYPASS_CBUFG => true
+      )
+      port map
+      (clk_i        => clk_i
+      ,cke_i        => cke_i
+      ,arstn_i      => arstn_i
+      ,clk_div_o    => clk_div_byp(0)(i)
+      );
+
+    dut_50_byp : clock_divider
+      generic map
+      (RATIO        => C_RATIOS(i)
+      ,ALGO         => "50%"
+      ,BYPASS_CBUFG => true
+      )
+      port map
+      (clk_i        => clk_i
+      ,cke_i        => cke_i
+      ,arstn_i      => arstn_i
+      ,clk_div_o    => clk_div_byp(1)(i)
+      );
   end generate gen_ratio;
+
+  -----------------------------------------------------------------------------
+  -- BYPASS_CBUFG = true : clk_div_o equal to the one of the instance with
+  -- cbufg, compared C_SETTLE after each change of one of them
+  -----------------------------------------------------------------------------
+  p_bypass : process
+  begin
+    wait on clk_div, clk_div_byp;
+    wait for C_SETTLE;
+    for a in 0 to 1 loop
+      for i in 0 to C_NB-1 loop
+        if clk_div_byp(a)(i) /= clk_div(a)(i) then
+          byp_errors <= byp_errors + 1;
+          alert(ERROR, "BYPASS_CBUFG=true : clk_div_o differs from the instance with cbufg RATIO=" & to_string(C_RATIOS(i)) & " ALGO=" & algo_name(a), C_SCOPE);
+        end if;
+      end loop;
+    end loop;
+    byp_events <= byp_events + 1;
+  end process p_bypass;
 
   -----------------------------------------------------------------------------
   -- Clock enable driver : cke_i changes on the falling edges of clk_i
@@ -297,6 +350,12 @@ begin
     wait until falling_edge(clk_i);
     arstn_i <= '1';
     measure_all("After reset");
+
+    ------------------------------------------------
+    log(ID_LOG_HDR, "6. BYPASS_CBUFG = true : same output as with cbufg", C_SCOPE);
+    ------------------------------------------------
+    check_value(byp_events > 1000, ERROR, "BYPASS_CBUFG=true : outputs compared " & to_string(byp_events) & " times");
+    check_value(byp_errors, 0, ERROR, "BYPASS_CBUFG=true : clk_div_o equal to the instance with cbufg during the whole simulation");
 
     log(ID_LOG_HDR, "Simulation Finished", C_SCOPE);
     report_alert_counters(FINAL);
