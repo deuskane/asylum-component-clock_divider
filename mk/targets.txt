@@ -1,5 +1,9 @@
-default         : Default Target
-lint_ghdl       : Lint with GHDL (-Wall analysis and elaboration of clock_divider)
-lint_ghdl_synth : Synthesis check, ghdl --synth -Wall of clock_divider (5 configurations)
-sim_basic       : Simulation of all RATIO / ALGO cases (UVVM, self-checking)
+default                       : Default Target
+lint_ghdl                     : Lint with GHDL (-Wall analysis and elaboration of clock_divider_wrapper)
+lint_ghdl_synth_default       : Synthesis check of clock_divider_wrapper, default generics
+lint_ghdl_synth_duty50_ratio4 : Synthesis check of clock_divider_wrapper, 50% duty cycle, RATIO 4
+lint_ghdl_synth_duty50_ratio5 : Synthesis check of clock_divider_wrapper, 50% duty cycle, RATIO 5
+lint_ghdl_synth_pulse_ratio1  : Synthesis check of clock_divider_wrapper, pulse, RATIO 1
+lint_ghdl_synth_pulse_ratio5  : Synthesis check of clock_divider_wrapper, pulse, RATIO 5
+sim_basic                     : Simulation of all RATIO / ALGO cases (UVVM, self-checking)
 
