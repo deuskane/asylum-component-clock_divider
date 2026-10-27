@@ -65,6 +65,12 @@ architecture rtl of clock_divider is
   --              falling edge) is ORed to extend the high phase by half a
   --              cycle : RATIO/2 cycles high, RATIO/2 cycles low exactly
   --              (assuming a 50% duty cycle on clk_i)
+  --              clk_div_neg_r is not gated by cke_i : it is always
+  --              clk_div_pos_r delayed by half a clk_i cycle (no half-cycle
+  --              path from cke_i). The odd RATIO duty cycle is then exactly
+  --              50% only with cke_i = '1' : with cke_i active 1 cycle out
+  --              of N, the high time is ((RATIO-1)/2)*N + 1/2 clk_i cycles
+  --              for a period of RATIO*N cycles.
   -----------------------------------------------------------------------------
   constant RATIO_MAX            : natural := RATIO;
   constant RATIO_HIGH           : natural := RATIO - RATIO/2;
@@ -161,6 +167,7 @@ begin
     end process;
 
     -- Process on negedge of clock : sample posedge divider 
+    -- Not gated by cke_i : clk_div_pos_r is already frozen when cke_i = '0'
     process(arstn_i,clk_i)
     begin 
       if arstn_i='0'
@@ -168,10 +175,7 @@ begin
         clk_div_neg_r     <= '0';
       elsif falling_edge(clk_i)
       then
-        if (cke_i = '1')
-        then
-          clk_div_neg_r     <= clk_div_pos_r;
-        end if;
+        clk_div_neg_r     <= clk_div_pos_r;
       end if;
     end process;
 

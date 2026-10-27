@@ -15,11 +15,10 @@
 --              * reset : clk_div_o low during reset, first rising edge at
 --                the expected clk_i edge after the release
 --              * cke_i = 0 : clk_div_o frozen
---              * cke_i = 1 one cycle out of 2 (pulse) : period 2*RATIO*T
---              Each instance has a copy with BYPASS_CBUFG = true : its
---              clk_div_o must be equal to the one of the instance with cbufg
---              during the whole simulation (cbufg is a wire in the generic
---              techmap)
+--              * cke_i = 1 one cycle out of 2 : period 2*RATIO*T and high
+--                time (2*T for pulse, RATIO*T for 50% even RATIO,
+--                (RATIO-1)*T + T/2 for 50% odd RATIO), with cke_i changing
+--                on the falling edges then on the rising edges of clk_i
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author   Description
@@ -59,6 +58,8 @@ architecture tb of tb_clock_divider is
   signal   cke_i        : std_logic := '1';
   signal   cke_req      : std_logic := '1';   -- cke_i value requested by the sequencer
   signal   cke_toggle   : boolean   := false; -- cke_i active one cycle out of 2
+  signal   cke_on_rise  : boolean   := false; -- cke_i changes after the rising
+                                              -- edges of clk_i (else falling)
   signal   arstn_i      : std_logic := '0';
   signal   clk_div      : clk_div_t;
   signal   clk_div_byp  : clk_div_t;         -- Instances with BYPASS_CBUFG = true
@@ -70,6 +71,11 @@ architecture tb of tb_clock_divider is
     if a = 0 then return "pulse"; else return "50%"; end if;
   end function;
 
+  function edge_name(e : natural) return string is
+  begin
+    if e = 0 then return "falling edge"; else return "rising edge"; end if;
+  end function;
+
   -- Expected high time (cke_i = 1)
   function exp_high(a : natural; ratio : positive) return time is
   begin
@@ -79,6 +85,19 @@ architecture tb of tb_clock_divider is
       return C_CLK_PERIOD;
     else
       return (ratio * C_CLK_PERIOD) / 2;
+    end if;
+  end function;
+
+  -- Expected high time with cke_i = 1 one cycle out of 2 (ratio > 1)
+  -- 50% odd ratio : the half-cycle extension is half a clk_i cycle
+  function exp_high_cke2(a : natural; ratio : positive) return time is
+  begin
+    if a = 0 then
+      return 2 * C_CLK_PERIOD;
+    elsif ratio mod 2 = 0 then
+      return ratio * C_CLK_PERIOD;
+    else
+      return (ratio-1) * C_CLK_PERIOD + C_CLK_PERIOD/2;
     end if;
   end function;
 
@@ -169,10 +188,17 @@ begin
 
   -----------------------------------------------------------------------------
   -- Clock enable driver : cke_i changes on the falling edges of clk_i
+  -- Clock enable driver : cke_i changes on the falling edges of clk_i, or
+  -- C_SETTLE after the rising edges (logic clocked on rising edge)
   -----------------------------------------------------------------------------
   p_cke : process
   begin
-    wait until falling_edge(clk_i);
+    if cke_on_rise then
+      wait until rising_edge(clk_i);
+      wait for C_SETTLE;
+    else
+      wait until falling_edge(clk_i);
+    end if;
     if cke_toggle then
       cke_i <= not cke_i;
     else
@@ -311,26 +337,32 @@ begin
     ------------------------------------------------
     log(ID_LOG_HDR, "4. cke_i = 1 one cycle out of 2 : period 2*RATIO", C_SCOPE);
     ------------------------------------------------
-    cke_toggle <= true;
-    wait until rising_edge(clk_i);
-    for a in 0 to 1 loop
-      for i in 0 to C_NB-1 loop
-        if C_RATIOS(i) > 1 then
-          -- pulse : high 2 cycles (no high time check for 50%)
-          if a = 0 then
-            measure(a, i, 2*C_RATIOS(i)*C_CLK_PERIOD, 2*C_CLK_PERIOD,
-                    "cke_i 1/2 RATIO=" & to_string(C_RATIOS(i)) & " ALGO=" & algo_name(a));
-          else
-            measure(a, i, 2*C_RATIOS(i)*C_CLK_PERIOD, 0 ns,
-                    "cke_i 1/2 RATIO=" & to_string(C_RATIOS(i)) & " ALGO=" & algo_name(a));
+    -- e = 0 : cke_i changes on the falling edges of clk_i
+    -- e = 1 : cke_i changes after the rising edges of clk_i
+    for e in 0 to 1 loop
+      cke_on_rise <= (e = 1);
+      cke_toggle  <= true;
+      for c in 1 to 4 loop
+        wait until rising_edge(clk_i);
+      end loop;
+      for a in 0 to 1 loop
+        for i in 0 to C_NB-1 loop
+          if C_RATIOS(i) > 1 then
+            measure(a, i, 2*C_RATIOS(i)*C_CLK_PERIOD, exp_high_cke2(a, C_RATIOS(i)),
+                    "cke_i 1/2 (" & edge_name(e) & ") RATIO=" & to_string(C_RATIOS(i)) & " ALGO=" & algo_name(a));
           end if;
-        end if;
+        end loop;
+      end loop;
+      cke_toggle <= false;
+      cke_req    <= '1';
+      for c in 1 to 4 loop
+        wait until falling_edge(clk_i);
       end loop;
     end loop;
-    cke_toggle <= false;
-    cke_req    <= '1';
-    wait until falling_edge(clk_i);
-    wait until falling_edge(clk_i);
+    cke_on_rise <= false;
+    for c in 1 to 4 loop
+      wait until falling_edge(clk_i);
+    end loop;
     measure_all("After cke_i toggling");
 
     ------------------------------------------------
