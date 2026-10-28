@@ -38,9 +38,9 @@
 
 # asylum-component-clock_divider
 
-**Static-ratio clock divider with "pulse" and "50%" duty-cycle algorithms, clock enable and technology clock buffer.**
+**Static-ratio clock divider with "pulse" and "50%" duty-cycle algorithms, clock enable and optional technology clock buffer.**
 
-VLNV: `asylum:component:clock_divider:2.0.3`
+VLNV: `asylum:component:clock_divider:2.1.0`
 
 ## Table of Contents
 
@@ -57,7 +57,7 @@ VLNV: `asylum:component:clock_divider:2.0.3`
 
 ## Introduction
 
-This IP divides an input clock by a ratio fixed at elaboration time (`RATIO` generic). A down-counter clocked on the rising edge of `clk_i` produces either a one-cycle pulse every `RATIO` cycles (`ALGO = "pulse"`) or a clock of period `RATIO` with a 50 % duty cycle (`ALGO = "50%"`, using an additional falling-edge register for odd ratios). The result is driven through the `cbufg` clock buffer of `asylum:target:techmap`, so it can be mapped on a global clock resource of the target technology.
+This IP divides an input clock by a ratio fixed at elaboration time (`RATIO` generic). A down-counter clocked on the rising edge of `clk_i` produces either a one-cycle pulse every `RATIO` cycles (`ALGO = "pulse"`) or a clock of period `RATIO` with a 50 % duty cycle (`ALGO = "50%"`, using an additional falling-edge register for odd ratios). The result is driven through the `cbufg` clock buffer of `asylum:target:techmap`, so it can be mapped on a global clock resource of the target technology, unless `BYPASS_CBUFG = true`: the output is then a plain register output, to be used as a data (for example the `"pulse"` output as a clock enable).
 
 ### Key Features
 
@@ -66,7 +66,7 @@ This IP divides an input clock by a ratio fixed at elaboration time (`RATIO` gen
 - `"50%"` algorithm: period `RATIO` cycles, `RATIO/2` cycles high and low (half-cycle correction with a falling-edge register when `RATIO` is odd)
 - Clock enable `cke_i`: counter and output registers freeze when low
 - Asynchronous active-low reset `arstn_i`
-- Output driven through the technology clock buffer `cbufg` (generic pass-through or NanoXplore NG-Medium cell, selected by `asylum:target:techmap`)
+- Output driven through the technology clock buffer `cbufg` (generic pass-through or NanoXplore NG-Medium cell, selected by `asylum:target:techmap`), or directly when `BYPASS_CBUFG = true`
 - Component declaration available in `asylum.clock_divider_pkg`
 
 ## Block Diagram
@@ -75,9 +75,9 @@ Diagram: [doc/clock_divider.drawio](doc/clock_divider.drawio) (open with diagram
 
 - `clk_counter_r` counts down from `RATIO-1` to 0 and reloads (period `RATIO` for both algorithms).
 - `clk_div_pos_r` (rising edge) is `1` when the counter is 0 (`"pulse"`) or when the counter is `>= RATIO - RATIO/2` (`"50%"`, i.e. `RATIO/2` cycles high).
-- `clk_div_neg_r` samples `clk_div_pos_r` on the falling edge; it is ORed with `clk_div_pos_r` only for `"50%"` with an odd `RATIO`.
+- `clk_div_neg_r` samples `clk_div_pos_r` on every falling edge (not gated by `cke_i`); it is ORed with `clk_div_pos_r` only for `"50%"` with an odd `RATIO`.
 - The selected signal (`clk_div`) goes through `cbufg` to `clk_div_o`.
-- All registers are gated by `cke_i` and asynchronously reset by `arstn_i`; with `RATIO = 1` none of them is generated.
+- The rising-edge registers are gated by `cke_i`; all registers are asynchronously reset by `arstn_i`; with `RATIO = 1` none of them is generated.
 
 ## Top-Level
 
@@ -89,6 +89,7 @@ Top-level entity: **`clock_divider`** ([hdl/clock_divider.vhd](hdl/clock_divider
 |------|------|---------|-------------|
 | `RATIO` | positive | `2` | Static division ratio; `1` = no division (`clk_div_o` connected to `clk_i`, `cke_i` and `arstn_i` ignored) |
 | `ALGO` | string | `"pulse"` | Division algorithm: `"pulse"` (one-cycle pulse) or `"50%"` (50 % duty cycle). Any other value triggers an assertion (severity failure); tools that ignore it build the `"pulse"` divider |
+| `BYPASS_CBUFG` | boolean | `false` | `false`: `clk_div_o` through the clock buffer `cbufg` (divided clock); `true`: no clock buffer, `clk_div_o` is used as a data (e.g. the `"pulse"` output as a clock enable), it does not use a clock resource |
 
 ### Ports
 
@@ -104,7 +105,7 @@ Top-level entity: **`clock_divider`** ([hdl/clock_divider.vhd](hdl/clock_divider
 
 | Name | Direction | Type | Description |
 |------|-----------|------|-------------|
-| `clk_div_o` | out | std_logic | Divided clock (through `cbufg` when `RATIO > 1`) |
+| `clk_div_o` | out | std_logic | Divided clock (through `cbufg` when `RATIO > 1` and `BYPASS_CBUFG = false`) |
 
 ### Instantiation Example
 
@@ -123,6 +124,20 @@ use     asylum.clock_divider_pkg.all;
      ,arstn_i   => arst_b
      ,clk_div_o => clk_div4
     );
+
+  -- Clock enable of one cycle every 20 cycles (no clock buffer)
+  ins_cke_div20 : entity asylum.clock_divider
+    generic map
+    ( RATIO        => 20
+     ,ALGO         => "pulse"
+     ,BYPASS_CBUFG => true
+    )
+    port map
+    ( clk_i        => clk
+     ,cke_i        => '1'
+     ,arstn_i      => arst_b
+     ,clk_div_o    => cke_div20
+    );
 ```
 
 ## HDL Modules
@@ -130,7 +145,7 @@ use     asylum.clock_divider_pkg.all;
 | File | Unit | Kind | Role |
 |------|------|------|------|
 | [hdl/clock_divider_pkg.vhd](hdl/clock_divider_pkg.vhd) | `clock_divider_pkg` | package | Component declaration of `clock_divider` |
-| [hdl/clock_divider.vhd](hdl/clock_divider.vhd) | `clock_divider` | entity | Top-level: counter, pulse / 50 % generation, falling-edge register, `cbufg` instance |
+| [hdl/clock_divider.vhd](hdl/clock_divider.vhd) | `clock_divider` | entity | Top-level: counter, pulse / 50 % generation, falling-edge register, `cbufg` instance (unless `BYPASS_CBUFG`) |
 
 There is no secondary entity in this IP.
 
@@ -144,7 +159,7 @@ This IP has no software-visible registers.
 
 | File | DUT | Description |
 |------|-----|-------------|
-| [sim/tb_clock_divider.vhd](sim/tb_clock_divider.vhd) | `clock_divider` (20 instances) | UVVM self-checking testbench (609 checks), 10 ns clock. One instance per `RATIO` in {1, 2, 3, 4, 5, 6, 7, 8, 24, 25} and per `ALGO` in {`"pulse"`, `"50%"`}. (1) `clk_div_o` low during reset and first rising edge at the expected `clk_i` edge after the release (`RATIO` for pulse, 1 for 50 %); (2) period (`RATIO*T`) and high time (`T` for pulse, `RATIO*T/2` for 50 %, `T/2` for `RATIO = 1`) measured on 3 periods; (3) `cke_i = 0` at 4 different phases: every output frozen during 30 cycles (`RATIO = 1` still follows `clk_i`), then period / high time measured again; (4) `cke_i` active one cycle out of 2: period `2*RATIO*T` (and high time `2*T` for pulse); (5) asynchronous reset while running clears the outputs |
+| [sim/tb_clock_divider.vhd](sim/tb_clock_divider.vhd) | `clock_divider` (40 instances) | UVVM self-checking testbench (611 checks), 10 ns clock. One instance per `RATIO` in {1, 2, 3, 4, 5, 6, 7, 8, 24, 25} and per `ALGO` in {`"pulse"`, `"50%"`}. (1) `clk_div_o` low during reset and first rising edge at the expected `clk_i` edge after the release (`RATIO` for pulse, 1 for 50 %); (2) period (`RATIO*T`) and high time (`T` for pulse, `RATIO*T/2` for 50 %, `T/2` for `RATIO = 1`) measured on 3 periods; (3) `cke_i = 0` at 4 different phases: every output frozen during 30 cycles (`RATIO = 1` still follows `clk_i`), then period / high time measured again; (4) `cke_i` active one cycle out of 2: period `2*RATIO*T` (and high time `2*T` for pulse); (5) asynchronous reset while running clears the outputs; (6) each instance has a copy with `BYPASS_CBUFG = true`, whose `clk_div_o` is compared to the one of the instance with `cbufg` 1 ns after every change during the whole simulation (equal, `cbufg` being a wire in the generic techmap) |
 
 ### Targets
 
@@ -152,6 +167,19 @@ This IP has no software-visible registers.
 |--------|----------|-------------|
 | `default` | `clock_divider` | HDL fileset only (not a simulation) |
 | `sim_basic` | `tb_clock_divider` | Simulation of all `RATIO` / `ALGO` cases (UVVM, self-checking, GHDL) |
+| `lint_ghdl` | `asylum.clock_divider_wrapper` | Lint: GHDL `-Wall` analysis and elaboration (empty simulation) of `clock_divider` in a wrapper with `ALGO` selected by the boolean `ALGO_50` (`syn/clock_divider_wrapper.vhd`: a FuseSoC parameter value cannot contain `%`) |
+| `lint_ghdl_synth_default` | `asylum.clock_divider_wrapper` | Synthesis check (see below), default generics |
+| `lint_ghdl_synth_pulse_ratio1` | `asylum.clock_divider_wrapper` | Synthesis check, pulse, RATIO 1: `RATIO=1` |
+| `lint_ghdl_synth_pulse_ratio5` | `asylum.clock_divider_wrapper` | Synthesis check, pulse, RATIO 5: `RATIO=5` |
+| `lint_ghdl_synth_duty50_ratio4` | `asylum.clock_divider_wrapper` | Synthesis check, 50% duty cycle, RATIO 4: `RATIO=4`, `ALGO_50=true` |
+| `lint_ghdl_synth_duty50_ratio5` | `asylum.clock_divider_wrapper` | Synthesis check, 50% duty cycle, RATIO 5: `RATIO=5`, `ALGO_50=true` |
+
+A `lint_ghdl_synth_*` target is `lint_ghdl` with the generics of its configuration (FuseSoC `parameters`) and a `pre_run` hook, `ghdl_synth.sh` of `asylum:utils:generators` (>= 2.8.0, `tools/ghdl/`), which adds `include ghdl_synth.mk` to the Makefile generated by edalize. The run step (`make run EXTRA_OPTIONS=<generics>`) then runs, in the build directory:
+
+1. `ghdl --synth` of the toplevel (rule `ghdl_synth` of `ghdl_synth.mk`), with the options of the target: `STD`, `ANALYZE_OPTIONS` (`-Wall`), `TOPLEVEL_LIBS`, `TOPLEVEL` and the generics. It writes `clock_divider_wrapper_synth.vhd` (netlist) and `clock_divider_wrapper_synth.log`, prints the warnings, and fails on a synthesis error (an inferred latch is one);
+2. `ghdl -r --no-run`: elaboration with the same generics, without simulation.
+
+To add a configuration, add a target with its `parameters` (the generics are declared in the `parameters` section of `clock_divider.core`).
 
 ### How to Run
 
@@ -161,13 +189,15 @@ The default tool is GHDL (`mk/defs.mk`: `TOOL ?= ghdl`, `TARGET ?= sim_basic`).
 make help                 # variables, rules and target list (mk/targets.txt)
 make sim_basic            # run one target (log in log/)
 make nonreg_sim           # run every sim_* target
+make lint_ghdl            # GHDL -Wall lint (make nonreg_lint: every lint_* target)
+make lint_ghdl_synth_default   # GHDL -Wall lint + ghdl --synth -Wall check of one configuration
 make clean                # remove build/
 ```
 
 Equivalent FuseSoC command:
 
 ```bash
-fusesoc --cores-root . run --build-root build --target sim_basic asylum:component:clock_divider:2.0.3
+fusesoc --cores-root . run --build-root build --target sim_basic asylum:component:clock_divider:2.1.0
 ```
 
 ### Simulation Features
@@ -176,7 +206,7 @@ fusesoc --cores-root . run --build-root build --target sim_basic asylum:componen
 
 ## Synthesis
 
-No dedicated synthesis target. The HDL of the `default` target contains no simulation-only construct (no `textio`, file access, `report` or `wait`) and is synthesizable. The clock buffer is taken from `asylum:target:techmap`: a pass-through (`hdl/generic/cbufg.vhd`) by default, or the NanoXplore NG-Medium cell when `TARGET_NANOXPLORE_NG_MEDIUM` is set. The divided output is a generated clock: declare it as such in the timing constraints of the design that instantiates it. For odd ratios with `"50%"` the output combines rising- and falling-edge registers.
+No vendor synthesis target (the `lint_ghdl_synth_*` targets check the RTL with `ghdl --synth`, see [Targets](#targets)). The HDL of the `default` target contains no simulation-only construct (no `textio`, file access, `report` or `wait`) and is synthesizable. The clock buffer is taken from `asylum:target:techmap`: a pass-through (`hdl/generic/cbufg.vhd`) by default, or the NanoXplore NG-Medium cell when `TARGET_NANOXPLORE_NG_MEDIUM` is set. The divided output is a generated clock: declare it as such in the timing constraints of the design that instantiates it. For odd ratios with `"50%"` the output combines rising- and falling-edge registers.
 
 ## Design Notes
 
@@ -186,8 +216,8 @@ No dedicated synthesis target. The HDL of the `default` target contains no simul
 - **Reset**: the counter is loaded with `RATIO-1`, `clk_div_pos_r` and `clk_div_neg_r` are cleared (`clk_div_o = 0`).
 - **`"pulse"`**: the counter runs from `RATIO-1` down to 0; `clk_div_pos_r` is set for one cycle after the counter reaches 0. Output frequency `f_clk / RATIO`, high time one `clk_i` period.
 - **`"50%"`, even `RATIO`**: the counter period is `RATIO`; `clk_div_pos_r` is high while the counter is `>= RATIO/2`, i.e. `RATIO/2` cycles high and `RATIO/2` low (exact 50 %, rising-edge logic only). The first rising edge of `clk_div_o` follows the first `clk_i` rising edge after reset.
-- **`"50%"`, odd `RATIO`**: the counter period is `RATIO`; `clk_div_pos_r` is high during `(RATIO-1)/2` cycles (counter `>= (RATIO+1)/2`), and ORing with its falling-edge copy `clk_div_neg_r` extends the high phase by half a cycle: `RATIO/2` cycles high and `RATIO/2` low (e.g. 12.5 / 12.5 cycles for `RATIO = 25`). The duty cycle is exactly 50 % when `clk_i` has a 50 % duty cycle; it follows the `clk_i` duty cycle error otherwise. A rising-edge-only implementation would give `(RATIO-1)/2` / `(RATIO+1)/2` cycles.
-- **Clock enable**: when `cke_i = 0` the counter, `clk_div_pos_r` and `clk_div_neg_r` hold their value (`clk_div_o` frozen); the period is counted in enabled `clk_i` cycles.
+- **`"50%"`, odd `RATIO`**: the counter period is `RATIO`; `clk_div_pos_r` is high during `(RATIO-1)/2` cycles (counter `>= (RATIO+1)/2`), and ORing with its falling-edge copy `clk_div_neg_r` extends the high phase by half a cycle: `RATIO/2` cycles high and `RATIO/2` low (e.g. 12.5 / 12.5 cycles for `RATIO = 25`). The duty cycle is exactly 50 % when `clk_i` has a 50 % duty cycle; it follows the `clk_i` duty cycle error otherwise. A rising-edge-only implementation would give `(RATIO-1)/2` / `(RATIO+1)/2` cycles. The extension is always half a `clk_i` cycle (`clk_div_neg_r` is `clk_div_pos_r` delayed by half a cycle, whatever `cke_i`), so the duty cycle is exactly 50 % only with `cke_i = 1`: with `cke_i` active one cycle out of `N`, the high time is `((RATIO-1)/2)*N + 1/2` cycles for a period of `RATIO*N` cycles (e.g. 2.5 / 6 cycles for `RATIO = 3`, `N = 2`), whatever the clock edge on which `cke_i` changes.
+- **Clock enable**: when `cke_i = 0` the counter and `clk_div_pos_r` hold their value, and `clk_div_neg_r` copies the frozen `clk_div_pos_r` on the next falling edge (`clk_div_o` frozen); the period is counted in enabled `clk_i` cycles. `cke_i` only reaches rising-edge registers (no half-cycle path).
 - **Invalid `ALGO`**: an assertion (severity failure) reports any value other than `"pulse"` or `"50%"`; the `"pulse"` logic is generated in that case.
 
 ## Directory Structure
@@ -206,6 +236,8 @@ asylum-component-clock_divider/
 │   └── clock_divider.vhd
 ├── sim/
 │   └── tb_clock_divider.vhd    # UVVM self-checking testbench
+├── syn/
+│   └── clock_divider_wrapper.vhd # Lint / synthesis check wrapper (ALGO selected by the boolean ALGO_50)
 └── .github/workflows/ci.yml    # CI (sim_basic)
 ```
 
@@ -216,3 +248,4 @@ asylum-component-clock_divider/
 | `asylum:utils:pkg` | `files_hdl` | Common packages (`math_pkg` is imported by `clock_divider`) |
 | `asylum:target:techmap` | `files_hdl` | `techmap_pkg` and the `cbufg` clock buffer cell |
 | `bitvis:verification:uvvm` | `files_sim` | UVVM utility library (testbench only) |
+| `asylum:utils:generators` (`>=2.8.0`) | `syn` | `ghdl_synth.sh` / `ghdl_synth.mk` (`pre_run` hook of `lint_ghdl_synth_*`) |

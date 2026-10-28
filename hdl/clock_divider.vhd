@@ -6,7 +6,7 @@
 -- Author     : Mathieu Rosière
 -- Company    : 
 -- Created    : 2013-12-26
--- Last update: 2026-10-05
+-- Last update: 2026-10-22
 -- Platform   : 
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
@@ -30,6 +30,7 @@
 -- 2026-10-05  2.2      mrosiere 50% : period is RATIO for odd RATIO (was RATIO-1)
 --                               and high time is RATIO/2 cycles exactly,
 --                               assert on invalid ALGO (fallback to pulse)
+-- 2026-10-22  2.3      mrosiere Add BYPASS_CBUFG (no clock buffer on clk_div_o)
 -------------------------------------------------------------------------------
 
 library IEEE;
@@ -43,8 +44,10 @@ use     asylum.math_pkg.all;
 entity clock_divider is
 -------------------------------------------------------------------------------
   generic(RATIO        : positive := 2;       -- Static Ratio
-          ALGO         : string   := "pulse"  -- pulse
+          ALGO         : string   := "pulse"; -- pulse
                                               -- 50%
+          BYPASS_CBUFG : boolean  := false    -- false : clk_div_o through the clock buffer cbufg
+                                              -- true  : no clock buffer (clk_div_o used as a data)
           );
   port   (clk_i        : in  std_logic;       -- Clock Input
           cke_i        : in  std_logic;       -- Clock Enable (ignored if RATIO=1)
@@ -65,6 +68,12 @@ architecture rtl of clock_divider is
   --              falling edge) is ORed to extend the high phase by half a
   --              cycle : RATIO/2 cycles high, RATIO/2 cycles low exactly
   --              (assuming a 50% duty cycle on clk_i)
+  --              clk_div_neg_r is not gated by cke_i : it is always
+  --              clk_div_pos_r delayed by half a clk_i cycle (no half-cycle
+  --              path from cke_i). The odd RATIO duty cycle is then exactly
+  --              50% only with cke_i = '1' : with cke_i active 1 cycle out
+  --              of N, the high time is ((RATIO-1)/2)*N + 1/2 clk_i cycles
+  --              for a period of RATIO*N cycles.
   -----------------------------------------------------------------------------
   constant RATIO_MAX            : natural := RATIO;
   constant RATIO_HIGH           : natural := RATIO - RATIO/2;
@@ -163,6 +172,7 @@ begin
     end process;
 
     -- Process on negedge of clock : sample posedge divider 
+    -- Not gated by cke_i : clk_div_pos_r is already frozen when cke_i = '0'
     process(arstn_i,clk_i)
     begin 
       if arstn_i='0'
@@ -170,22 +180,30 @@ begin
         clk_div_neg_r     <= '0';
       elsif falling_edge(clk_i)
       then
-        if (cke_i = '1')
-        then
-          clk_div_neg_r     <= clk_div_pos_r;
-        end if;
+        clk_div_neg_r     <= clk_div_pos_r;
       end if;
     end process;
 
     ---------------------------------------------------------------------------
     -- Clock Buffer
     ---------------------------------------------------------------------------
+    gen_cbufg: if not BYPASS_CBUFG
+    generate
+      ins_cbufg : cbufg
+      port map (
+        d_i   => clk_div,
+        d_o   => clk_div_o
+        );
+    end generate gen_cbufg;
 
-  ins_cbufg : cbufg
-  port map (
-    d_i   => clk_div,
-    d_o   => clk_div_o
-    );
+    ---------------------------------------------------------------------------
+    -- No Clock Buffer : clk_div_o is used as a data (e.g. a clock enable in
+    -- "pulse" mode), it must not use a clock resource
+    ---------------------------------------------------------------------------
+    gen_cbufg_b: if BYPASS_CBUFG
+    generate
+      clk_div_o <= clk_div;
+    end generate gen_cbufg_b;
 
   end generate gen_ratio_gt_1;
 end rtl;
