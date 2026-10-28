@@ -87,7 +87,7 @@ Top-level entity: **`clock_divider`** ([hdl/clock_divider.vhd](hdl/clock_divider
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `RATIO` | positive | `2` | Static division ratio; `1` = no division (`clk_div_o` connected to `clk_i`) |
+| `RATIO` | positive | `2` | Static division ratio; `1` = no division (`clk_div_o` connected to `clk_i`, `cke_i` and `arstn_i` ignored) |
 | `ALGO` | string | `"pulse"` | Division algorithm: `"pulse"` (one-cycle pulse) or `"50%"` (50 % duty cycle). Any other value triggers an assertion (severity failure); tools that ignore it build the `"pulse"` divider |
 | `BYPASS_CBUFG` | boolean | `false` | `false`: `clk_div_o` through the clock buffer `cbufg` (divided clock); `true`: no clock buffer, `clk_div_o` is used as a data (e.g. the `"pulse"` output as a clock enable), it does not use a clock resource |
 
@@ -98,8 +98,8 @@ Top-level entity: **`clock_divider`** ([hdl/clock_divider.vhd](hdl/clock_divider
 | Name | Direction | Type | Description |
 |------|-----------|------|-------------|
 | `clk_i` | in | std_logic | Input clock |
-| `cke_i` | in | std_logic | Clock enable, active high: the divider advances only when `1` |
-| `arstn_i` | in | std_logic | Asynchronous reset, active low |
+| `cke_i` | in | std_logic | Clock enable, active high: the divider advances only when `1` (ignored when `RATIO = 1`) |
+| `arstn_i` | in | std_logic | Asynchronous reset, active low (ignored when `RATIO = 1`) |
 
 #### Divided Clock
 
@@ -212,7 +212,7 @@ No vendor synthesis target (the `lint_ghdl_synth_*` targets check the RTL with `
 
 ### Operation
 
-- **`RATIO = 1`**: `clk_div_o <= clk_i`; `cke_i`, `arstn_i` and `BYPASS_CBUFG` have no effect and no `cbufg` is instantiated. The output is the clock itself, also in `"pulse"` mode: a user of the pulse as a clock enable must handle `RATIO = 1` (enable always active) itself.
+- **`RATIO = 1`**: `clk_div_o <= clk_i`; `cke_i` and `arstn_i` have no effect and no `cbufg` is instantiated. The contract is therefore not the one of `RATIO >= 2`: `clk_div_o` is not frozen when `cke_i = 0` and keeps toggling during reset (it is not held at 0). When `RATIO` is computed (e.g. `FSYS/FSYS_INT` in PicoSoC), a design that relies on `cke_i` to stop the divided clock, or on `clk_div_o = 0` during reset, works with `RATIO = 2` but not with `RATIO = 1`: if this is needed, gate the clock with a clock gating cell (`cgate` of `asylum:target:techmap`), not with a LUT gate.
 - **Reset**: the counter is loaded with `RATIO-1`, `clk_div_pos_r` and `clk_div_neg_r` are cleared (`clk_div_o = 0`).
 - **`"pulse"`**: the counter runs from `RATIO-1` down to 0; `clk_div_pos_r` is set for one cycle after the counter reaches 0. Output frequency `f_clk / RATIO`, high time one `clk_i` period.
 - **`"50%"`, even `RATIO`**: the counter period is `RATIO`; `clk_div_pos_r` is high while the counter is `>= RATIO/2`, i.e. `RATIO/2` cycles high and `RATIO/2` low (exact 50 %, rising-edge logic only). The first rising edge of `clk_div_o` follows the first `clk_i` rising edge after reset.

@@ -13,8 +13,9 @@ component clock_divider is
                                               -- true  : no clock buffer (clk_div_o used as a data)
           );
   port   (clk_i        : in  std_logic;       -- Clock Input
-          cke_i        : in  std_logic;       -- Clock Enable
+          cke_i        : in  std_logic;       -- Clock Enable (ignored if RATIO=1)
           arstn_i      : in  std_logic;       -- Reset Asynchronous active low
+                                              -- (ignored if RATIO=1)
           clk_div_o    : out std_logic        -- Clock Input divided by RATIO
           );
 end component clock_divider;
