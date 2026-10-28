@@ -21,9 +21,10 @@ CAPI=2:
 # 2026-10-05  2.0.3    mrosiere Fix 50% period for odd RATIO, assert on invalid
 #                               ALGO, UVVM self-checking testbench, remove
 #                               unused parameters
+# 2026-10-22  2.1.0    mrosiere Add BYPASS_CBUFG generic (no clock buffer)
 #-----------------------------------------------------------------------------
 
-name : asylum:component:clock_divider:2.0.3
+name : asylum:component:clock_divider:2.1.0
 description : Clock Divider Cell
 
 filesets:

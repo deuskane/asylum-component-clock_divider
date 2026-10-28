@@ -7,8 +7,10 @@ package clock_divider_pkg is
 component clock_divider is
 -------------------------------------------------------------------------------
   generic(RATIO        : positive := 2;       -- Static Ratio
-          ALGO         : string   := "pulse"  -- pulse
+          ALGO         : string   := "pulse"; -- pulse
                                               -- 50%
+          BYPASS_CBUFG : boolean  := false    -- false : clk_div_o through the clock buffer cbufg
+                                              -- true  : no clock buffer (clk_div_o used as a data)
           );
   port   (clk_i        : in  std_logic;       -- Clock Input
           cke_i        : in  std_logic;       -- Clock Enable
