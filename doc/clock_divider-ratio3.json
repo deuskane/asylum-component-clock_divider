@@ -1,0 +1,57 @@
+{
+ "signal": [
+  {
+   "name": "clk_i",
+   "wave": "lhlhlhlhlhlhlhlhlh"
+  },
+  {
+   "name": "arstn_i",
+   "wave": "0.1..............."
+  },
+  {
+   "name": "clk_counter_r",
+   "wave": "3..4.5.3.4.5.3.4.5",
+   "data": [
+    "2",
+    "1",
+    "0",
+    "2",
+    "1",
+    "0",
+    "2",
+    "1",
+    "0"
+   ]
+  },
+  {},
+  [
+   "pulse",
+   {
+    "name": "clk_div_o = clk_div_pos_r",
+    "wave": "0......1.0...1.0.."
+   }
+  ],
+  {},
+  [
+   "50%",
+   {
+    "name": "clk_div_pos_r",
+    "wave": "0..1.0...1.0...1.0"
+   },
+   {
+    "name": "clk_div_neg_r (falling edge)",
+    "wave": "0...1.0...1.0...1."
+   },
+   {
+    "name": "clk_div_o = pos or neg",
+    "wave": "0..1..0..1..0..1.."
+   }
+  ]
+ ],
+ "head": {
+  "text": "RATIO = 3 after the reset release : pulse and 50% (one step = half a clk_i period)"
+ },
+ "config": {
+  "hscale": 1
+ }
+}
