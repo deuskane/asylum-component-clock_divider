@@ -1,14 +1,39 @@
-default                       : Default Target
-lint_ghdl                     : Lint with GHDL (-Wall analysis and elaboration of clock_divider_wrapper)
-lint_ghdl_synth_default       : Synthesis check of clock_divider_wrapper, default generics
-lint_ghdl_synth_duty50_ratio4 : Synthesis check of clock_divider_wrapper, 50% duty cycle, RATIO 4
-lint_ghdl_synth_duty50_ratio5 : Synthesis check of clock_divider_wrapper, 50% duty cycle, RATIO 5
-lint_ghdl_synth_pulse_ratio1  : Synthesis check of clock_divider_wrapper, pulse, RATIO 1
-lint_ghdl_synth_pulse_ratio5  : Synthesis check of clock_divider_wrapper, pulse, RATIO 5
-sim_basic                     : Simulation of all RATIO / ALGO cases (UVVM, self-checking)
-syn_default                   : Synthesis (Artix-7, sky130) of clock_divider_wrapper, default generics
-syn_duty50_ratio4             : Synthesis (Artix-7, sky130) of clock_divider_wrapper, 50% duty cycle, RATIO 4
-syn_duty50_ratio5             : Synthesis (Artix-7, sky130) of clock_divider_wrapper, 50% duty cycle, RATIO 5
-syn_pulse_ratio1              : Synthesis (Artix-7, sky130) of clock_divider_wrapper, pulse, RATIO 1
-syn_pulse_ratio5              : Synthesis (Artix-7, sky130) of clock_divider_wrapper, pulse, RATIO 5
+default                         : Default Target
+lint_ghdl                       : Lint with GHDL (-Wall analysis and elaboration of clock_divider_wrapper)
+lint_ghdl_synth_default         : Synthesis check of clock_divider_wrapper, default generics
+lint_ghdl_synth_duty50_ratio4   : Synthesis check of clock_divider_wrapper, 50% duty cycle, RATIO 4
+lint_ghdl_synth_duty50_ratio5   : Synthesis check of clock_divider_wrapper, 50% duty cycle, RATIO 5
+lint_ghdl_synth_pulse_ratio1    : Synthesis check of clock_divider_wrapper, pulse, RATIO 1
+lint_ghdl_synth_pulse_ratio5    : Synthesis check of clock_divider_wrapper, pulse, RATIO 5
+sim_duty50_ratio1               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 1 - every scenario
+sim_duty50_ratio2               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 2 - every scenario
+sim_duty50_ratio24              : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 24 - every scenario
+sim_duty50_ratio25              : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 25 - every scenario
+sim_duty50_ratio3               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 3 - every scenario
+sim_duty50_ratio4               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 4 - every scenario
+sim_duty50_ratio5               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 5 - build only (scenarios of TESTS_LIST)
+sim_duty50_ratio5_bypass        : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 5 - period and high time of the instance with BYPASS_CBUFG = true
+sim_duty50_ratio5_cke_half      : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 5 - cke_i = 1 one cycle out of 2 (changes on the falling then the rising edges), period 2*RATIO
+sim_duty50_ratio5_cke_stop      : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 5 - cke_i = 0 at 4 phases freezes clk_div_o, then period and high time
+sim_duty50_ratio5_period        : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 5 - period and high time with cke_i = 1
+sim_duty50_ratio5_reset         : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 5 - clk_div_o low during the reset, first rising edge after the release
+sim_duty50_ratio5_reset_running : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 5 - reset between two clock edges clears clk_div_o at once, first rising edge after the release
+sim_duty50_ratio6               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 6 - every scenario
+sim_duty50_ratio7               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 7 - every scenario
+sim_duty50_ratio8               : Simulation of clock_divider (UVVM), 50% duty cycle, RATIO 8 - every scenario
+sim_pulse_ratio1                : Simulation of clock_divider (UVVM), pulse, RATIO 1 - every scenario
+sim_pulse_ratio2                : Simulation of clock_divider (UVVM), pulse, RATIO 2 - every scenario
+sim_pulse_ratio24               : Simulation of clock_divider (UVVM), pulse, RATIO 24 - every scenario
+sim_pulse_ratio25               : Simulation of clock_divider (UVVM), pulse, RATIO 25 - every scenario
+sim_pulse_ratio3                : Simulation of clock_divider (UVVM), pulse, RATIO 3 - every scenario
+sim_pulse_ratio4                : Simulation of clock_divider (UVVM), pulse, RATIO 4 - every scenario
+sim_pulse_ratio5                : Simulation of clock_divider (UVVM), pulse, RATIO 5 - every scenario
+sim_pulse_ratio6                : Simulation of clock_divider (UVVM), pulse, RATIO 6 - every scenario
+sim_pulse_ratio7                : Simulation of clock_divider (UVVM), pulse, RATIO 7 - every scenario
+sim_pulse_ratio8                : Simulation of clock_divider (UVVM), pulse, RATIO 8 - every scenario
+syn_default                     : Synthesis (Artix-7, sky130) of clock_divider_wrapper, default generics
+syn_duty50_ratio4               : Synthesis (Artix-7, sky130) of clock_divider_wrapper, 50% duty cycle, RATIO 4
+syn_duty50_ratio5               : Synthesis (Artix-7, sky130) of clock_divider_wrapper, 50% duty cycle, RATIO 5
+syn_pulse_ratio1                : Synthesis (Artix-7, sky130) of clock_divider_wrapper, pulse, RATIO 1
+syn_pulse_ratio5                : Synthesis (Artix-7, sky130) of clock_divider_wrapper, pulse, RATIO 5
 
