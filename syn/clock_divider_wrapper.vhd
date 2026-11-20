@@ -36,9 +36,9 @@ end entity clock_divider_wrapper;
 
 architecture rtl of clock_divider_wrapper is
 
-  function algo_name (algo_50 : boolean) return string is
+  function algo_name (is_50 : boolean) return string is
   begin
-    if algo_50 then
+    if is_50 then
       return "50%";
     else
       return "pulse";
