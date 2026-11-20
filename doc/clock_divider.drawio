@@ -1,0 +1,140 @@
+<mxfile host="Electron">
+  <diagram name="Overview" id="clkdiv-ov">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="clkdiv-ov-1" value="generics: RATIO (positive), ALGO (&quot;pulse&quot; | &quot;50%&quot;), BYPASS_CBUFG (boolean)" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;verticalAlign=middle;rounded=0;fontSize=10;fontColor=#666666;fontStyle=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="100" width="720" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-2" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="140" width="720" height="330" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-3" value="clock_divider" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="200" y="140" width="110" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-4" value="clk_counter_r&lt;br&gt;RATIO-1 down to 0" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="260" y="180" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-5" value="pulse: counter = 0&lt;br&gt;50%: counter &amp;gt;= RATIO - RATIO/2" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="440" y="180" width="210" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="205" as="sourcePoint"/>
+            <mxPoint x="440" y="205" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-7" value="clk_div_pos_r&lt;br&gt;rising edge of clk_i" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="440" y="270" width="210" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-8" value="clk_div_neg_r&lt;br&gt;falling edge of clk_i" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="440" y="340" width="210" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="545" y="230" as="sourcePoint"/>
+            <mxPoint x="545" y="270" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="470" y="310" as="sourcePoint"/>
+            <mxPoint x="470" y="340" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-11" value="OR&lt;br&gt;(50%, odd RATIO)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="690" y="275" width="100" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="650" y="290" as="sourcePoint"/>
+            <mxPoint x="690" y="290" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="650" y="360" as="sourcePoint"/>
+            <mxPoint x="740" y="335" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="740" y="360"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-14" value="cbufg&lt;br&gt;(techmap)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="820" y="285" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="790" y="305" as="sourcePoint"/>
+            <mxPoint x="820" y="305" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="805" y="305" as="sourcePoint"/>
+            <mxPoint x="905" y="305" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="805" y="255"/>
+              <mxPoint x="905" y="255"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-17" value="BYPASS_CBUFG = true" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;verticalAlign=middle;rounded=0;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="785" y="232" width="140" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-18" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="940" y="295" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="890" y="305" as="sourcePoint"/>
+            <mxPoint x="940" y="305" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-20" value="clk_div_o" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;verticalAlign=middle;rounded=0;align=left;" vertex="1" parent="1">
+          <mxGeometry x="970" y="290" width="170" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-21" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="150" y="195" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="205" as="sourcePoint"/>
+            <mxPoint x="260" y="205" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-23" value="cke_i" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;verticalAlign=middle;rounded=0;align=right;" vertex="1" parent="1">
+          <mxGeometry x="40" y="190" width="100" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-24" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="150" y="400" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-25" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="410" as="sourcePoint"/>
+            <mxPoint x="230" y="410" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-26" value="clk_i" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;verticalAlign=middle;rounded=0;align=right;" vertex="1" parent="1">
+          <mxGeometry x="40" y="395" width="100" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-27" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="150" y="430" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="440" as="sourcePoint"/>
+            <mxPoint x="230" y="440" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="clkdiv-ov-29" value="arstn_i" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;verticalAlign=middle;rounded=0;align=right;" vertex="1" parent="1">
+          <mxGeometry x="40" y="425" width="100" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="clkdiv-ov-30" value="clk_i, arstn_i: every register (asynchronous reset)&lt;br&gt;cke_i: clk_counter_r and clk_div_pos_r only&lt;br&gt;RATIO = 1: clk_div_o &amp;lt;= clk_i (no register, no cbufg)" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;verticalAlign=middle;rounded=0;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="235" y="395" width="400" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
