@@ -6,4 +6,9 @@ lint_ghdl_synth_duty50_ratio5 : Synthesis check of clock_divider_wrapper, 50% du
 lint_ghdl_synth_pulse_ratio1  : Synthesis check of clock_divider_wrapper, pulse, RATIO 1
 lint_ghdl_synth_pulse_ratio5  : Synthesis check of clock_divider_wrapper, pulse, RATIO 5
 sim_basic                     : Simulation of all RATIO / ALGO cases (UVVM, self-checking)
+syn_default                   : Synthesis (Artix-7, sky130) of clock_divider_wrapper, default generics
+syn_duty50_ratio4             : Synthesis (Artix-7, sky130) of clock_divider_wrapper, 50% duty cycle, RATIO 4
+syn_duty50_ratio5             : Synthesis (Artix-7, sky130) of clock_divider_wrapper, 50% duty cycle, RATIO 5
+syn_pulse_ratio1              : Synthesis (Artix-7, sky130) of clock_divider_wrapper, pulse, RATIO 1
+syn_pulse_ratio5              : Synthesis (Artix-7, sky130) of clock_divider_wrapper, pulse, RATIO 5
 
