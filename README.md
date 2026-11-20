@@ -212,17 +212,23 @@ fusesoc --cores-root . run --build-root build --target sim_basic asylum:componen
 
 ## Synthesis
 
-The `lint_ghdl_synth_*` targets check the RTL with `ghdl --synth` (see [Targets](#targets)). A `syn_*` target synthesizes `clock_divider_wrapper` with the generics of its configuration (same configurations as `lint_ghdl_synth_*`) with Yosys and its GHDL plugin (core `asylum:utils:yosys_synth`, `pre_run` hook `yosys_synth.sh`), in two flows: Xilinx Artix-7 (`synth_xilinx`) and the SkyWater `sky130_fd_sc_hd` standard cells (typical corner, liberty `ASIC_LIBERTY` of the asylum-env image). The reports are in the build directory: `clock_divider_wrapper_syn.json` (summary), `clock_divider_wrapper_<flow>.json` (`stat -json`) and `clock_divider_wrapper_<flow>.log` (Yosys log).
+The `lint_ghdl_synth_*` targets check the RTL with `ghdl --synth` (see [Targets](#targets)). A `syn_*` target synthesizes `clock_divider_wrapper` with the generics of its configuration (same configurations as `lint_ghdl_synth_*`) with Yosys and its GHDL plugin (core `asylum:utils:yosys_synth`, `pre_run` hook `yosys_synth.sh`), in two flows: Xilinx Artix-7 (`synth_xilinx`) and the SkyWater `sky130_fd_sc_hd` standard cells (typical corner, liberty `ASIC_LIBERTY` of the asylum-env image). The reports are in the build directory: `clock_divider_wrapper_syn.json` (summary), `clock_divider_wrapper_<flow>.json` (`stat -json`), `clock_divider_wrapper_xc7_inv.txt` (number of `INV` counted as LUT) and `clock_divider_wrapper_<flow>.log` (Yosys log).
 
-| Configuration | LUT | FF | BRAM | DSP | sky130 area (µm²) | sky130 cells |
-|---------------|-----|----|------|-----|-------------------|--------------|
-| `syn_default` (pulse, RATIO 2) | 0 | 2 | 0 | 0 | 73.82 | 5 |
-| `syn_pulse_ratio1` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `syn_pulse_ratio5` | 4 | 4 | 0 | 0 | 165.16 | 13 |
-| `syn_duty50_ratio4` | 1 | 3 | 0 | 0 | 113.86 | 9 |
-| `syn_duty50_ratio5` | 5 | 5 | 0 | 0 | 197.69 | 17 |
+| Configuration | LUT¹ | FF¹ | BRAM¹ | DSP¹ | Area² (µm²) | kGE³ |
+|---|---|---|---|---|---|---|
+| `syn_default` (pulse, RATIO 2) | 2 | 2 | 0 | 0 | 73.82 | 0.020 |
+| `syn_pulse_ratio1` (pulse, RATIO 1) | 0 | 0 | 0 | 0 | 0 | 0.000 |
+| `syn_pulse_ratio5` (pulse, RATIO 5) | 6 | 4 | 0 | 0 | 165.16 | 0.044 |
+| `syn_duty50_ratio4` (50 %, RATIO 4) | 2 | 3 | 0 | 0 | 113.86 | 0.030 |
+| `syn_duty50_ratio5` (50 %, RATIO 5) | 7 | 5 | 0 | 0 | 197.69 | 0.053 |
 
-Yosys 0.33 estimates, not a vendor implementation: LUT counts the `LUT1`..`LUT6` cells (the inverters of `synth_xilinx` are not counted: with `RATIO` 2 the counter toggles through an inverter, hence 0 LUT). With `RATIO` 1 the output is `clk_i` (no logic).
+¹ Xilinx Artix-7 (LUT6), Yosys 0.33 `synth_xilinx -flatten -noiopad -noclkbuf`, before place and route: an estimate, Vivado may differ. An `INV` counts as a LUT, unless it only drives flip-flop control pins (clock, clock enable, set, reset), which Vivado absorbs: `synth_xilinx` puts one on the `CLR` / `PRE` pin of each flip-flop for the active-low `arstn_i`.
+
+² SkyWater sky130 `sky130_fd_sc_hd`, typical corner (tt, 25 °C, 1.80 V), Yosys 0.33 `synth` + `dfflibmap` + `abc -liberty`: standard-cell area only, no timing constraint, no buffering, clock tree or placement; memories become flip-flops (no SRAM macro).
+
+³ Area in thousands of NAND2 gate equivalents (`sky130_fd_sc_hd__nand2_1` = 3.7536 µm²).
+
+With `RATIO` 1 the output is `clk_i` (no logic). With `RATIO` 2 both LUTs are inverters of the 1-bit counter, on the `D` input of the counter and of `clk_div_pos_r`.
 
 The HDL of the `default` target contains no simulation-only construct (no `textio`, file access, `report` or `wait`) and is synthesizable. The clock buffer is taken from `asylum:target:techmap`: a pass-through (`hdl/generic/cbufg.vhd`) by default, or the NanoXplore NG-Medium cell when `TARGET_NANOXPLORE_NG_MEDIUM` is set. The divided output is a generated clock: declare it as such in the timing constraints of the design that instantiates it. For odd ratios with `"50%"` the output combines rising- and falling-edge registers.
 
