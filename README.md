@@ -157,19 +157,19 @@ Figures of the `syn_*` targets (`make nonreg_syn`, see [Targets](#targets)): [sy
 
 | Configuration | LUT¹ | LUTRAM¹ | FF¹ | CARRY4¹ | MUXF7/F8¹ | BRAM¹ | DSP¹ | Area² (µm²) | kGE³ |
 |---|---|---|---|---|---|---|---|---|---|
-| `syn_default` (pulse, RATIO 2) | 4 | 0 | 2 | 0 | 0 | 0 | 0 | 73.82 | 0.020 |
+| `syn_default` (pulse, RATIO 2) | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 73.82 | 0.020 |
 | `syn_pulse_ratio1` (pulse, RATIO 1) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0.000 |
-| `syn_pulse_ratio5` (pulse, RATIO 5) | 10 | 0 | 4 | 1 | 0 | 0 | 0 | 165.16 | 0.044 |
-| `syn_duty50_ratio4` (50 %, RATIO 4) | 5 | 0 | 3 | 0 | 0 | 0 | 0 | 113.86 | 0.030 |
-| `syn_duty50_ratio5` (50 %, RATIO 5) | 12 | 0 | 5 | 1 | 0 | 0 | 0 | 197.69 | 0.053 |
+| `syn_pulse_ratio5` (pulse, RATIO 5) | 7 | 0 | 4 | 1 | 0 | 0 | 0 | 165.16 | 0.044 |
+| `syn_duty50_ratio4` (50 %, RATIO 4) | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 113.86 | 0.030 |
+| `syn_duty50_ratio5` (50 %, RATIO 5) | 8 | 0 | 5 | 1 | 0 | 0 | 0 | 197.69 | 0.053 |
 
-¹ Xilinx Artix-7 (LUT6), Yosys 0.33 `synth_xilinx -flatten -noiopad -noclkbuf`, before place and route: every cell of the netlist is counted, Vivado may differ. An `INV` counts as a `LUT1`: `synth_xilinx` puts one on the reset pin of each flip-flop with the active-low reset. The IP has no memory (no LUTRAM, no BRAM); `cbufg` is the generic pass-through of `asylum:target:techmap` (no `BUFG` counted).
+¹ Xilinx Artix-7 (LUT6), Yosys 0.33 `synth_xilinx -flatten -noiopad -noclkbuf`, before place and route: every cell of the netlist is counted, Vivado may differ. Identical cells are merged as a vendor tool does (`opt_merge -share_all`): the inverters of an active-low reset net become one; every remaining cell is counted, an `INV` as a `LUT1`. The IP has no memory (no LUTRAM, no BRAM); `cbufg` is the generic pass-through of `asylum:target:techmap` (no `BUFG` counted).
 
 ² SkyWater sky130 `sky130_fd_sc_hd`, typical corner (tt, 25 °C, 1.80 V), Yosys 0.33 `synth` + `dfflibmap` + `abc -liberty`: standard-cell area only, no timing constraint, no buffering, clock tree or placement.
 
 ³ Area in thousands of NAND2 gate equivalents (`sky130_fd_sc_hd__nand2_1` = 3.7536 µm²).
 
-With `RATIO` 1 the output is `clk_i` (no logic). With `RATIO` 2 the 4 LUTs are inverters: one per flip-flop on `arstn_i`, and 2 for the 1-bit counter, on the `D` input of the counter and of `clk_div_pos_r`.
+With `RATIO` 1 the output is `clk_i` (no logic). With `RATIO` 2 the 2 LUTs are inverters: one on `arstn_i`, shared by both flip-flops, and one for the 1-bit counter, on the `D` input of the counter and of `clk_div_pos_r` (both are `not clk_counter_r`).
 
 ## Theory of Operation
 
